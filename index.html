@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>文化祭_2-D</title>
+
+
+<style>
+
+/* =========================
+   全体
+========================= */
+
+body {
+
+    margin: 0;
+
+    padding: 20px;
+
+    background: #fed;
+
+    color: black;
+
+    font-family:
+        Arial,
+        "Noto Sans JP",
+        sans-serif;
+}
+
+
+/* =========================
+   タイトル
+========================= */
+
+h1 {
+
+    text-align: center;
+
+    margin-bottom: 20px;
+}
+
+
+/* =========================
+   現在再生中
+========================= */
+
+#nowPlaying {
+
+    text-align: center;
+
+    color: red;
+
+    margin-bottom: 25px;
+
+    font-size: 25px;
+}
+
+
+/* =========================
+   音源一覧
+========================= */
+
+.sound-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(180px, 1fr)
+        );
+
+    gap: 12px;
+}
+
+
+/* =========================
+   音源カード
+========================= */
+
+.sound {
+
+    background: #dff;
+
+    border:
+        1px solid #444;
+
+    border-radius: 12px;
+
+    padding: 15px;
+}
+
+
+/* =========================
+   音源名
+========================= */
+
+.sound-name {
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+
+    text-align: center;
+}
+
+
+/* =========================
+   ボタン共通
+========================= */
+
+button {
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 12px;
+
+    font-size: 16px;
+
+    cursor: pointer;
+}
+
+
+/* =========================
+   再生
+========================= */
+
+.play {
+
+    width: 100%;
+
+    background: blue;
+
+    color: white;
+
+    font-weight: bold;
+}
+
+
+/* =========================
+   一時停止
+========================= */
+
+.pause-one {
+
+    width: 100%;
+
+    margin-top: 7px;
+
+    background: #ff9800;
+
+    color: white;
+
+    font-weight: bold;
+}
+
+
+/* =========================
+   停止
+========================= */
+
+.stop-one {
+
+    width: 100%;
+
+    margin-top: 7px;
+
+    background: white;
+
+    color: red;
+}
+
+
+/* =========================
+   全停止
+========================= */
+
+#stopAll {
+
+    width: 100%;
+
+    margin-top: 25px;
+
+    padding: 16px;
+
+    background: #c62828;
+
+    color: white;
+
+    font-weight: bold;
+
+    font-size: 30px;
+}
+
+
+/* =========================
+   音量
+========================= */
+
+.volume {
+
+    margin-top: 10px;
+
+    width: 100%;
+}
+
+
+/* =========================
+   ループ
+========================= */
+
+.loop {
+
+    margin-top: 8px;
+
+    width: 100%;
+
+    background: #333;
+
+    color: white;
+}
+
+
+/* =========================
+   ループON
+========================= */
+
+.loop.active {
+
+    background: red;
+}
+
+
+/* =========================
+   再生中カード
+========================= */
+
+.sound.playing {
+
+    border:
+        3px solid red;
+
+    box-shadow:
+        0 0 10px
+        rgba(
+            76,
+            175,
+            80,
+            0.5
+        );
+}
+
+
+/* =========================
+   一時停止中カード
+========================= */
+
+.sound.paused {
+
+    border:
+        3px solid orange;
+}
+
+
+/* =========================
+   キーボード説明
+========================= */
+
+#keyboardInfo {
+
+    margin-top: 25px;
+
+    text-align: center;
+
+    color: black;
+
+    font-size: 13px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>
+2-D
+</h1>
+
+
+<div id="nowPlaying">
+
+現在再生中：なし
+
+</div>
+
+<div>
+      26/08/26
+      iosで音声コントロールが使えるよう修正しました
+</div>
+
+<div
+    class="sound-grid"
+    id="soundGrid">
+</div>
+
+
+<button
+    id="stopAll"
+    onclick="stopAll()">
+
+■ 全停止
+
+</button>
+
+
+<div id="keyboardInfo">
+
+数字キー 1～9：再生　
+／　
+Space：全停止
+
+</div>
+
+
+
+<script>
+
+
+/* =================================================
+   音源設定
+================================================= */
+
+const sounds = [
+
+
+
+    {
+        name: "モブワルツ",
+        file: "モブワルツ0.9.m4a"
+    },
+
+　
+      
+　　{
+        name: "ワルツ",
+        file: "ワルツ.m4a"
+    },
+
+
+
+      
+    {
+        name: "教会",
+        file: "6_教会.mp3"
+    },
+
+
+
+　  {
+        name: "ジュリエット遺書_1",
+        file: "new.mp3"
+    },
+
+　 {
+        name: "ジュリエット遺書_2",
+        file: "ジュリエット手紙_2.mp3"
+    },
+
+      
+    {
+        name: "雷",
+        file: "7_雷.mp3"
+    },
+
+
+     {
+        name: "ジョンvsロレンス",
+        file: "【フリーBGM】静かなる闘志 - 覚醒 -【戦闘・緊迫・かっこいい】.mp3"
+    },
+    {
+        name: "ロミオvsジョン_2",
+        file: "戦闘.mp3"
+    },
+     
+
+
+  
+    {
+        name: "ドア",
+        file: "ドア_10.mp3"
+    },
+
+ {
+        name: "足音",
+        file: "アスファルトの上を歩く1.mp3"
+    },
+      
+
+    {
+        name: "結婚式",
+        file: "1_結婚式.mp3"
+    },
+
+{
+        name: "エンディング_初心LOVE※ループOFFにすること",
+        file: "エンディング_初心LOVE改.mp3"
+    },
+
+
+
+
+
+];
+
+
+/* =================================================
+   再生中の音源
+================================================= */
+
+const playingSounds = new Map();
+
+// ページを開いた時点からスリープ防止を開始
+requestWakeLock();
+
+
+/* =================================================
+   Web Audio API
+   音源ごとの個別音量をiPhone/iPadでも調整
+================================================= */
+
+let audioContext = null;
+
+/* =================================================
+   画面スリープ防止（音源再生中のみ）
+   iPhone / iPad / Android 対応
+================================================= */
+
+let wakeLock = null;
+
+async function requestWakeLock() {
+    try {
+        if ("wakeLock" in navigator && document.visibilityState === "visible") {
+            if (wakeLock === null) {
+                wakeLock = await navigator.wakeLock.request("screen");
+
+                wakeLock.addEventListener("release", () => {
+                    wakeLock = null;
+                });
+            }
+        }
+    } catch (error) {
+        console.log("Wake Lockを取得できませんでした:", error);
+    }
+}
+
+async function releaseWakeLock() {
+    if (wakeLock !== null) {
+        try {
+            await wakeLock.release();
+        } catch (error) {
+            console.log("Wake Lock解除エラー:", error);
+        }
+        wakeLock = null;
+    }
+}
+
+async function updateWakeLock() {
+    // 音源の再生状態に関係なく、サイトを開いている間は
+    // 画面スリープ防止を維持する
+    await requestWakeLock();
+}
+
+const gainNodes = new Map();
+
+
+function getAudioContext() {
+
+    if (!audioContext) {
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+
+            return null;
+
+        }
+
+        audioContext =
+            new AudioContextClass();
+
+    }
+
+    return audioContext;
+
+}
+
+
+/* =================================================
+   ループ設定
+================================================= */
+
+const loopSettings = new Map();
+
+
+/* =================================================
+   音量設定
+================================================= */
+
+const volumeSettings = new Map();
+
+
+/* =================================================
+   画面を作成
+================================================= */
+
+const grid =
+    document.getElementById(
+        "soundGrid"
+    );
+
+
+sounds.forEach(
+    (sound, index) => {
+
+        loopSettings.set(
+            index,
+            false
+        );
+
+        volumeSettings.set(
+            index,
+            1
+        );
+
+        createSoundCard(
+            sound,
+            index
+        );
+
+    }
+);
+
+
+/* =================================================
+   音源カード作成
+================================================= */
+
+function createSoundCard(
+    sound,
+    index
+) {
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+
+    card.className =
+        "sound";
+
+
+    card.id =
+        "sound-" + index;
+
+
+    card.innerHTML = `
+
+        <div class="sound-name">
+
+            ${sound.name}
+
+        </div>
+
+
+        <button
+            class="play"
+            onclick="playSound(${index})">
+
+            ▶ 再生
+
+        </button>
+
+
+        <button
+            class="pause-one"
+            onclick="pauseSound(${index})">
+
+            ⏸ 一時停止
+
+        </button>
+
+
+        <button
+            class="stop-one"
+            onclick="stopSound(${index})">
+
+            ■ 停止
+
+        </button>
+
+
+        <button
+            class="loop"
+            id="loop-${index}"
+            onclick="toggleLoop(${index})">
+
+            🔁 ループ OFF
+
+        </button>
+
+
+        <input
+            class="volume"
+            id="volume-${index}"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="1"
+            oninput="changeVolume(
+                ${index},
+                this.value
+            )">
+
+    `;
+
+
+    grid.appendChild(card);
+
+}
+
+
+/* =================================================
+   音源再生
+================================================= */
+
+function playSound(index) {
+
+    const sound =
+        sounds[index];
+
+
+    let audio =
+        playingSounds.get(index);
+
+
+    /*
+       iPhone / iPadでは
+       ユーザー操作時にAudioContextを再開
+    */
+
+    const context =
+        getAudioContext();
+
+
+    if (context) {
+
+        if (context.state === "suspended") {
+
+            context.resume();
+
+        }
+
+    }
+
+
+    /*
+       すでに音源が存在する場合
+       一時停止中なら続きから再生
+    */
+
+    if (audio) {
+
+        audio.play()
+            .then(() => {
+
+                const card =
+                    document.getElementById(
+                        "sound-" + index
+                    );
+
+                card.classList.remove(
+                    "paused"
+                );
+
+                card.classList.add(
+                    "playing"
+                );
+
+                updateNowPlaying();
+                updateWakeLock();
+
+            })
+            .catch(
+                error => {
+
+                    console.error(
+                        error
+                    );
+
+                }
+            );
+
+        return;
+
+    }
+
+
+    /*
+       新しい音源を作成
+    */
+
+    audio =
+        new Audio(
+            sound.file
+        );
+
+
+    /*
+       Web Audio APIへ接続
+       GainNodeで音源ごとの音量を管理
+    */
+
+    let gainNode = null;
+
+    if (context) {
+
+        try {
+
+            const source =
+                context.createMediaElementSource(
+                    audio
+                );
+
+
+            gainNode =
+                context.createGain();
+
+
+            gainNode.gain.value =
+                volumeSettings.get(index);
+
+
+            source.connect(
+                gainNode
+            );
+
+
+            gainNode.connect(
+                context.destination
+            );
+
+
+            gainNodes.set(
+                index,
+                gainNode
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Web Audio API error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+       Web Audio APIが使えない場合の予備
+    */
+
+    if (!gainNode) {
+
+        audio.volume =
+            volumeSettings.get(index);
+
+    }
+
+
+    audio.loop =
+        loopSettings.get(index);
+
+
+    playingSounds.set(
+        index,
+        audio
+    );
+
+
+    const card =
+        document.getElementById(
+            "sound-" + index
+        );
+
+
+    card.classList.remove(
+        "paused"
+    );
+
+
+    card.classList.add(
+        "playing"
+    );
+
+
+    updateNowPlaying();
+
+
+    /*
+       再生
+    */
+
+    audio.play()
+        .then(() => {
+            updateWakeLock();
+        })
+        .catch(
+            error => {
+
+                console.error(
+                    error
+                );
+
+                alert(
+                    "音源を再生できませんでした。\n"
+                    + sound.file
+                );
+
+            }
+        );
+
+
+    /*
+       再生終了
+    */
+
+    audio.onended =
+        function() {
+
+            if (!audio.loop) {
+
+                playingSounds.delete(
+                    index
+                );
+
+                gainNodes.delete(
+                    index
+                );
+
+                card.classList.remove(
+                    "playing"
+                );
+
+                card.classList.remove(
+                    "paused"
+                );
+
+                updateNowPlaying();
+                updateWakeLock();
+
+            }
+
+        };
+
+}
+
+
+/* =================================================
+   一時停止
+================================================= */
+
+function pauseSound(index) {
+
+    const audio =
+        playingSounds.get(
+            index
+        );
+
+
+    if (!audio) {
+
+        return;
+
+    }
+
+
+    audio.pause();
+
+
+    const card =
+        document.getElementById(
+            "sound-" + index
+        );
+
+
+    card.classList.remove(
+        "playing"
+    );
+
+
+    card.classList.add(
+        "paused"
+    );
+
+
+    updateNowPlaying();
+    updateWakeLock();
+
+}
+
+
+/* =================================================
+   個別停止
+================================================= */
+
+function stopSound(index) {
+
+    const audio =
+        playingSounds.get(
+            index
+        );
+
+
+    if (audio) {
+
+        audio.pause();
+
+        audio.currentTime =
+            0;
+
+        playingSounds.delete(
+            index
+        );
+
+        gainNodes.delete(
+            index
+        );
+
+    }
+
+
+    const card =
+        document.getElementById(
+            "sound-" + index
+        );
+
+
+    if (card) {
+
+        card.classList.remove(
+            "playing"
+        );
+
+        card.classList.remove(
+            "paused"
+        );
+
+    }
+
+
+    updateNowPlaying();
+    updateWakeLock();
+
+}
+
+
+/* =================================================
+   全停止
+================================================= */
+
+function stopAll() {
+
+    playingSounds.forEach(
+        (audio, index) => {
+
+            audio.pause();
+
+            audio.currentTime =
+                0;
+
+
+            const card =
+                document.getElementById(
+                    "sound-" + index
+                );
+
+
+            if (card) {
+
+                card.classList.remove(
+                    "playing"
+                );
+
+                card.classList.remove(
+                    "paused"
+                );
+
+            }
+
+        }
+    );
+
+
+    playingSounds.clear();
+
+    gainNodes.clear();
+
+
+    updateNowPlaying();
+    // 全停止しても、サイトを開いている間はスリープ防止を継続
+    updateWakeLock();
+
+}
+
+
+/* =================================================
+   ループ切り替え
+================================================= */
+
+function toggleLoop(index) {
+
+    const audio =
+        playingSounds.get(
+            index
+        );
+
+
+    const button =
+        document.getElementById(
+            "loop-" + index
+        );
+
+
+    const newLoopState =
+        !loopSettings.get(index);
+
+
+    loopSettings.set(
+        index,
+        newLoopState
+    );
+
+
+    /*
+       現在再生中なら
+       その音源にも反映
+    */
+
+    if (audio) {
+
+        audio.loop =
+            newLoopState;
+
+    }
+
+
+    if (newLoopState) {
+
+        button.classList.add(
+            "active"
+        );
+
+        button.textContent =
+            "🔁 ループ ON";
+
+    } else {
+
+        button.classList.remove(
+            "active"
+        );
+
+        button.textContent =
+            "🔁 ループ OFF";
+
+    }
+
+}
+
+
+/* =================================================
+   音量変更
+================================================= */
+
+function changeVolume(
+    index,
+    value
+) {
+
+    const volume =
+        Number(value);
+
+
+    volumeSettings.set(
+        index,
+        volume
+    );
+
+
+    /*
+       Web Audio APIのGainNodeで
+       音源ごとの音量を変更
+    */
+
+    const gainNode =
+        gainNodes.get(index);
+
+
+    if (gainNode) {
+
+        gainNode.gain.value =
+            volume;
+
+        return;
+
+    }
+
+
+    /*
+       GainNodeがまだない場合の予備
+    */
+
+    const audio =
+        playingSounds.get(index);
+
+
+    if (audio) {
+
+        audio.volume =
+            volume;
+
+    }
+
+}
+
+
+/* =================================================
+   現在再生中表示
+================================================= */
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        requestWakeLock();
+    }
+});
+
+// ブラウザがユーザー操作を要求する場合に備えて、最初の操作でも取得
+document.addEventListener("click", requestWakeLock, { once: true });
+document.addEventListener("touchstart", requestWakeLock, { once: true });
+
+function updateNowPlaying() {
+
+    const display =
+        document.getElementById(
+            "nowPlaying"
+        );
+
+
+    if (
+        playingSounds.size === 0
+    ) {
+
+        display.textContent =
+            "現在再生中：なし";
+
+        return;
+
+    }
+
+
+    const names = [];
+
+
+    playingSounds.forEach(
+        (audio, index) => {
+
+            if (!audio.paused) {
+
+                names.push(
+                    sounds[index].name
+                );
+
+            }
+
+        }
+    );
+
+
+    if (names.length === 0) {
+
+        display.textContent =
+            "現在再生中：一時停止中";
+
+        return;
+
+    }
+
+
+    display.textContent =
+        "現在再生中："
+        + names.join(" / ");
+
+}
+
+
+/* =================================================
+   キーボード操作
+================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        /*
+           1～9キー
+        */
+
+        const number =
+            Number(event.key);
+
+
+        if (
+            number >= 1 &&
+            number <= 9
+        ) {
+
+            const index =
+                number - 1;
+
+
+            if (
+                sounds[index]
+            ) {
+
+                playSound(
+                    index
+                );
+
+            }
+
+        }
+
+
+        /*
+           Spaceキーで全停止
+        */
+
+        if (
+            event.code ===
+            "Space"
+        ) {
+
+            event.preventDefault();
+
+            stopAll();
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
